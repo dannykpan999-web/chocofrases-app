@@ -5,6 +5,52 @@ const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER || '5493517890449'
 const WA_BASE   = `https://wa.me/${WA_NUMBER}?text=`
 const WA_ORDER  = WA_BASE + encodeURIComponent('Hola Chocofrases! Me gustaría hacer un pedido 🍫')
 
+// ── Hero carousel slides ──────────────────────────────────────
+const SLIDES = [
+  {
+    img:     'https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=1920&q=90',
+    tag:     'Bienvenidos a Chocofrases',
+    title:   'El chocolate que\nse siente distinto',
+    italic:  'se siente distinto',
+    sub:     'Elaborados a mano en Córdoba con cacao seleccionado, sin conservantes artificiales.',
+    cta:     'Hacer mi pedido',
+  },
+  {
+    img:     'https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=1920&q=90',
+    tag:     'Cajas & Bombones',
+    title:   'Regalos que\nenamoran de verdad',
+    italic:  'enamoran de verdad',
+    sub:     'Bombones artesanales rellenos de ganache, maracuyá y dulce de leche cordobés. Perfectos para regalar.',
+    cta:     'Ver productos',
+    href:    '#productos',
+  },
+  {
+    img:     'https://images.unsplash.com/photo-1606312619070-d48b4c652a52?auto=format&fit=crop&w=1920&q=90',
+    tag:     'Elaboración Artesanal',
+    title:   'Cada pieza,\nhecha a mano',
+    italic:  'hecha a mano',
+    sub:     'Nuestro equipo controla cada detalle del proceso. Sin líneas industriales — solo pasión y dedicación.',
+    cta:     'Nuestra historia',
+    href:    '#nosotros',
+  },
+  {
+    img:     'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1920&q=90',
+    tag:     'Trufas & Tabletas',
+    title:   'Sabores que\nno se olvidan',
+    italic:  'no se olvidan',
+    sub:     'Trufas de cacao belga, tabletas artesanales 100% puras y sachets para kioscos y distribuidoras.',
+    cta:     'Pedir por WhatsApp',
+  },
+  {
+    img:     'https://images.unsplash.com/photo-1481391032119-d89fee407e44?auto=format&fit=crop&w=1920&q=90',
+    tag:     'Para Kioscos & Distribuidoras',
+    title:   'Tu negocio merece\nlo mejor',
+    italic:  'lo mejor',
+    sub:     'Abastecemos kioscos y distribuidoras de toda la provincia. Pedidos rápidos por WhatsApp con remito incluido.',
+    cta:     'Quiero ser distribuidor',
+  },
+]
+
 // ── Unsplash images (free, high-res) ─────────────────────────
 const IMG = {
   hero:    'https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=1920&q=90',
@@ -74,12 +120,31 @@ export default function Home() {
   const [scrolled, setScrolled]     = useState(false)
   const [activeTest, setActiveTest] = useState(0)
   const [menuOpen, setMenuOpen]     = useState(false)
+  const [slide, setSlide]           = useState(0)
+  const [prevSlide, setPrevSlide]   = useState(null)
+  const [animating, setAnimating]   = useState(false)
+
+  const goToSlide = (idx) => {
+    if (animating || idx === slide) return
+    setPrevSlide(slide)
+    setAnimating(true)
+    setSlide(idx)
+    setTimeout(() => { setPrevSlide(null); setAnimating(false) }, 900)
+  }
+  const nextSlide = () => goToSlide((slide + 1) % SLIDES.length)
+  const prevSlideBtn = () => goToSlide((slide - 1 + SLIDES.length) % SLIDES.length)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60)
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  // Auto-advance carousel every 5 seconds
+  useEffect(() => {
+    const t = setInterval(nextSlide, 5000)
+    return () => clearInterval(t)
+  }, [slide, animating])
 
   useEffect(() => {
     const t = setInterval(() => setActiveTest(p => (p + 1) % testimonials.length), 4000)
@@ -176,11 +241,12 @@ export default function Home() {
         }
 
         @media (max-width: 768px) {
-          .hero-title { font-size: 42px !important; }
+          .hero-title { font-size: 38px !important; }
           .grid-2 { grid-template-columns: 1fr !important; }
           .grid-3 { grid-template-columns: 1fr !important; }
           .hide-mobile { display: none !important; }
           .gallery-grid { grid-template-columns: repeat(2, 1fr) !important; height: auto !important; }
+          .hero-content-wrap { padding: 0 24px !important; }
         }
       `}</style>
 
@@ -213,36 +279,150 @@ export default function Home() {
         </a>
       </nav>
 
-      {/* ── HERO ───────────────────────────────────────────── */}
-      <section style={{ position: 'relative', height: '100vh', minHeight: 600, overflow: 'hidden' }}>
-        <img src={IMG.hero} alt="Chocolates artesanales Chocofrases"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.9) 100%)' }} />
+      {/* ── HERO CAROUSEL ──────────────────────────────────── */}
+      <section style={{ position: 'relative', height: '100vh', minHeight: 640, overflow: 'hidden' }}>
 
-        <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 24px' }}>
-          <div style={{ fontSize: 10, letterSpacing: '0.35em', color: GOLD, textTransform: 'uppercase', marginBottom: 24, opacity: 0.9 }}>
-            Fábrica Artesanal · Córdoba, Argentina · Desde 2018
+        {/* Slide images — crossfade */}
+        {SLIDES.map((s, i) => (
+          <div key={i} style={{
+            position: 'absolute', inset: 0,
+            opacity: i === slide ? 1 : 0,
+            transition: 'opacity 1s ease',
+            zIndex: i === slide ? 1 : 0,
+          }}>
+            <img src={s.img} alt={s.title}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center',
+                transform: i === slide ? 'scale(1.04)' : 'scale(1)',
+                transition: 'transform 6s ease',
+              }} />
+            {/* Gradient overlay */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.25) 100%)' }} />
           </div>
-          <h1 className="hero-title" style={{ fontSize: 72, fontWeight: 700, color: '#FFFFFF', lineHeight: 1.1, maxWidth: 820, marginBottom: 12 }}>
-            El chocolate que<br />
-            <em style={{ color: GOLD, fontStyle: 'italic' }}>se siente distinto</em>
-          </h1>
-          <div style={{ width: 56, height: 1, background: GOLD, margin: '24px auto' }} />
-          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.8)', maxWidth: 500, lineHeight: 1.7, marginBottom: 40, fontWeight: 300 }}>
-            Chocolates elaborados con cacao seleccionado, sin conservantes artificiales. Pedí por WhatsApp — texto, audio o foto, lo que te sea más cómodo.
-          </p>
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <a href={WA_ORDER} target="_blank" rel="noopener noreferrer" className="btn-gold">
-              <WhatsAppIcon size={18} /> Hacer mi pedido
-            </a>
-            <a href="#productos" className="btn-outline">Ver productos</a>
+        ))}
+
+        {/* Slide content */}
+        <div style={{ position: 'relative', zIndex: 10, height: '100%', display: 'flex', alignItems: 'center', padding: '0 80px' }}>
+          {SLIDES.map((s, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              maxWidth: 680,
+              opacity:    i === slide ? 1 : 0,
+              transform:  i === slide ? 'translateY(0)' : 'translateY(24px)',
+              transition: 'opacity 0.9s ease 0.2s, transform 0.9s ease 0.2s',
+              pointerEvents: i === slide ? 'auto' : 'none',
+            }}>
+              {/* Tag pill */}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+                <div style={{ width: 32, height: 1, background: GOLD }} />
+                <span style={{ fontSize: 10, letterSpacing: '0.3em', color: GOLD, textTransform: 'uppercase' }}>{s.tag}</span>
+                <div style={{ width: 32, height: 1, background: GOLD }} />
+              </div>
+
+              {/* Title */}
+              <h1 className="hero-title" style={{ fontSize: 68, fontWeight: 700, color: '#FFFFFF', lineHeight: 1.1, marginBottom: 0 }}>
+                {s.title.split('\n').map((line, li) =>
+                  line === s.italic
+                    ? <span key={li}><br /><em style={{ color: GOLD }}>{line}</em></span>
+                    : <span key={li}>{line}</span>
+                )}
+              </h1>
+
+              {/* Gold divider */}
+              <div style={{ width: 56, height: 1, background: GOLD, margin: '28px 0' }} />
+
+              {/* Subtitle */}
+              <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8, marginBottom: 40, fontWeight: 300, maxWidth: 480 }}>
+                {s.sub}
+              </p>
+
+              {/* CTAs */}
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                <a href={s.href || WA_ORDER}
+                  target={s.href ? undefined : '_blank'}
+                  rel={s.href ? undefined : 'noopener noreferrer'}
+                  className="btn-gold">
+                  <WhatsAppIcon size={17} /> {s.cta}
+                </a>
+                <a href="#productos" className="btn-outline">Ver catálogo</a>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Arrow buttons ── */}
+        <button onClick={prevSlideBtn} aria-label="Anterior"
+          style={{ position: 'absolute', left: 28, top: '50%', transform: 'translateY(-50%)', zIndex: 20,
+            width: 52, height: 52, border: `1px solid rgba(201,168,76,0.5)`, background: 'rgba(0,0,0,0.35)',
+            color: GOLD, fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(4px)', transition: 'background 0.2s, border-color 0.2s',
+          }}
+          onMouseOver={e => { e.currentTarget.style.background='rgba(201,168,76,0.2)'; e.currentTarget.style.borderColor=GOLD }}
+          onMouseOut={e =>  { e.currentTarget.style.background='rgba(0,0,0,0.35)';      e.currentTarget.style.borderColor='rgba(201,168,76,0.5)' }}
+        >‹</button>
+
+        <button onClick={nextSlide} aria-label="Siguiente"
+          style={{ position: 'absolute', right: 28, top: '50%', transform: 'translateY(-50%)', zIndex: 20,
+            width: 52, height: 52, border: `1px solid rgba(201,168,76,0.5)`, background: 'rgba(0,0,0,0.35)',
+            color: GOLD, fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(4px)', transition: 'background 0.2s, border-color 0.2s',
+          }}
+          onMouseOver={e => { e.currentTarget.style.background='rgba(201,168,76,0.2)'; e.currentTarget.style.borderColor=GOLD }}
+          onMouseOut={e =>  { e.currentTarget.style.background='rgba(0,0,0,0.35)';      e.currentTarget.style.borderColor='rgba(201,168,76,0.5)' }}
+        >›</button>
+
+        {/* ── Slide counter + dots ── */}
+        <div style={{ position: 'absolute', bottom: 36, left: '50%', transform: 'translateX(-50%)', zIndex: 20,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+
+          {/* Dot progress */}
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            {SLIDES.map((_, i) => (
+              <button key={i} onClick={() => goToSlide(i)} aria-label={`Slide ${i + 1}`}
+                style={{ width: i === slide ? 36 : 8, height: 8, borderRadius: 4, border: 'none',
+                  cursor: 'pointer', background: i === slide ? GOLD : 'rgba(255,255,255,0.3)',
+                  transition: 'all 0.4s ease', padding: 0,
+                }} />
+            ))}
+          </div>
+
+          {/* Slide number */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 13, color: GOLD, fontFamily: 'Playfair Display, serif', fontWeight: 600 }}>
+              0{slide + 1}
+            </span>
+            <div style={{ width: 40, height: 1, background: 'rgba(255,255,255,0.3)' }} />
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>0{SLIDES.length}</span>
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontSize: 10, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>scroll</div>
-          <div style={{ width: 1, height: 48, background: 'linear-gradient(to bottom, rgba(201,168,76,0.8), transparent)', animation: 'pulse 2s infinite' }} />
+        {/* ── Progress bar ── */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: 'rgba(255,255,255,0.08)', zIndex: 20 }}>
+          <div style={{
+            height: '100%', background: GOLD,
+            width: `${((slide + 1) / SLIDES.length) * 100}%`,
+            transition: 'width 0.6s ease',
+          }} />
+        </div>
+
+        {/* ── Thumbnail strip (right side) ── */}
+        <div className="hide-mobile" style={{ position: 'absolute', right: 28, top: '50%', transform: 'translateY(-50%)', zIndex: 20,
+          display: 'flex', flexDirection: 'column', gap: 8, marginTop: 60 }}>
+          {SLIDES.map((s, i) => (
+            <button key={i} onClick={() => goToSlide(i)}
+              style={{ width: 56, height: 40, padding: 0, border: i === slide ? `2px solid ${GOLD}` : '2px solid rgba(255,255,255,0.15)',
+                cursor: 'pointer', overflow: 'hidden', transition: 'border-color 0.3s', background: 'none',
+              }}>
+              <img src={s.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover',
+                filter: i === slide ? 'none' : 'brightness(0.5)', transition: 'filter 0.3s' }} />
+            </button>
+          ))}
+        </div>
+
+        {/* ── Scroll indicator ── */}
+        <div style={{ position: 'absolute', bottom: 48, left: 80, zIndex: 20,
+          display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 1, height: 48, background: `linear-gradient(to bottom, ${GOLD}, transparent)`, animation: 'pulse 2s infinite' }} />
+          <span style={{ fontSize: 9, letterSpacing: '0.25em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', writingMode: 'vertical-rl' }}>scroll</span>
         </div>
       </section>
 
